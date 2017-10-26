@@ -20,6 +20,7 @@ Ensembl FTP server that no proper FASTA parser lets you skip over.
 
 from __future__ import print_function, division, absolute_import
 from gzip import GzipFile
+from pyfaidx import Fasta, UnsupportedCompressionFormat
 import logging
 
 from six import binary_type, PY3
@@ -67,14 +68,22 @@ class FastaParser(object):
     def __init__(self):
         self.current_id = None
         self.current_lines = []
+        self.g
 
     def read_file(self, fasta_path):
         """
         Read the contents of a FASTA file into a dictionary
         """
-        fasta_dictionary = {}
-        for (identifier, sequence) in self.iterate_over_file(fasta_path):
-            fasta_dictionary[identifier] = sequence
+        # open uncompressed or BGZF compressed FASTA, using special header parsing
+        # returns Fasta object which acts as a dictionary: http://github.com/mdshw5/pyfaidx
+        try:
+            fasta_dictionary = Fasta(fasta_path, 
+                                     as_raw=True, 
+                                     key_function=lambda string: _parse_header_id(string.encode("ascii")))
+        except UnsupportedCompressionFormat:
+            fasta_dictionary = {}
+            for (identifier, sequence) in self.iterate_over_file(fasta_path):
+                fasta_dictionary[identifier] = sequence
         return fasta_dictionary
 
     def iterate_over_file(self, fasta_path):
