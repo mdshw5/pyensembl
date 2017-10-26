@@ -78,6 +78,7 @@ if __name__ == '__main__':
             "memoized-property>=1.0.2",
             "six>=1.9.0",
             "gtfparse>=0.0.3",
+            "pyfaidx>=0.5.0.1",
             "serializable",
             "tinytimer",
         ],
